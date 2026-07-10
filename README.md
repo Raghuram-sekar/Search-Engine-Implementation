@@ -7,6 +7,8 @@
 - [Key Innovation](#🔬-key-innovation)
 - [Performance Highlights](#📊-performance-highlights)
 - [Architecture](#🏗️-architecture)
+- [Methodology & Technical Details](#⚙️-methodology--technical-details)
+- [Project Structure](#📂-project-structure)
 - [Tech Stack](#🧱-tech-stack)
 - [Quick Start](#💻-quick-start)
 
@@ -40,7 +42,40 @@ A complete search engine architecture including a multi-threaded web crawler, da
 ---
 
 ## 🏗️ Architecture
-```\n[Core Architectural Components & Datastore Framework]\n```
+```mermaid
+graph TD
+    Seed[Crawl Seed URL] -->|Crawl thread pool| HTML[Download HTML pages]
+    HTML -->|Inverted index parser| DB[Index database file]
+    HTML -->|Link graph extractor| PageRank[PageRank calculator]
+    DB -->|Query matched| Interface[Web Search UI]
+    PageRank -->|Sort results| Interface
+```
+
+---
+
+## ⚙️ Methodology & Technical Details
+### Multi-Threaded Crawler
+The web crawler employs a thread pool to parse multiple URLs concurrently. Each thread downloads an HTML page, extracts outbound links to expand the queue, and saves raw page text. Visited pages are tracked in a thread-safe set to prevent infinite loops.
+
+### Inverted Index construction
+To support fast text searches, the indexer builds an inverted index. It maps every unique word to a list of page IDs and frequencies where it appears. This eliminates sequential scanning, enabling target document retrieval in under **5 milliseconds**.
+
+### PageRank Algorithm
+The search engine ranks pages based on structural link popularity. Given the hyperlink graph transition matrix \(\mathbf{M}\), PageRank scores are computed iteratively:
+$$\mathbf{r}^{k+1} = d \mathbf{M} \mathbf{r}^k + \frac{1-d}{N} \mathbf{e}$$
+where \(d = 0.85\) is the damping factor, \(N\) is the total count of pages, and \(\mathbf{e}\) is a vector of ones. This ranks pages with high inbound links higher in search results.
+
+---
+
+## 📂 Project Structure
+```
+search_engine/
+├── crawler.py           # Multi-threaded crawler script
+├── indexer.py           # Inverted index builder
+├── pagerank.py          # PageRank solver script
+├── app.py               # Flask backend search server
+└── templates/index.html # Web user interface
+```
 
 ---
 
@@ -59,6 +94,6 @@ git clone https://github.com/Raghuram-sekar/Search-Engine-Implementation.git
 cd Search-Engine-Implementation
 
 # Execute local setup commands:
-cd backend && python -m venv venv && source venv/bin/activate && pip install -r requirements.txt
 python crawler.py
+python app.py
 ```
